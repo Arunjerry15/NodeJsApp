@@ -1,0 +1,49 @@
+name: Matrix Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Choose environment"
+        required: true
+        default: "development"
+        type: choice
+        options:
+          - development
+          - production
+
+jobs:
+  Matrix:
+    runs-on: [self-hosted, Linux]
+    strategy:
+      matrix:
+        node-version: [16, 18]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm install
+        
+      - name: Create .env files
+        run: |
+          if [[ "${{ github.event.inputs.environment }}" == "production" ]]; then
+            echo "PORT=${{ secrets.PROD_PORT }}" >> .env.production
+            echo "APP=${{ secrets.PROD_APP }}" >> .env.production
+          else
+            echo "PORT=${{ secrets.DEV_PORT }}" >> .env.development
+            echo "APP=${{ secrets.DEV_APP }}" >> .env.development
+          fi
+
+      - name: Run app with environment
+        run: |
+          node server.js ${{ github.event.inputs.environment }} &
+          sleep 5
+          curl http://localhost:3000/health
+          pkill -f "node server.js"
