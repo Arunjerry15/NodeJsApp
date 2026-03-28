@@ -4,11 +4,14 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
+  pull_request: 
+    branches: [main]
 
 jobs:
   sonar:
     runs-on: [self-hosted, Linux]
-
+    if: github.event_name == 'pull_request'
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -25,7 +28,8 @@ jobs:
 
   docker:
     runs-on: [self-hosted, Linux]
-    needs: sonar   # runs only if sonar succeeds
+    # needs: sonar   # runs only if sonar succeeds
+    if: github.event_name == 'push'
 
     steps:
       - name: Checkout
@@ -41,8 +45,9 @@ jobs:
 
       - name: Tag Image
         run: |
-          docker tag dockerfile-distroless ${{ secrets.DOCKER_USERNAME }}/nodeapp:${{ github.sha }}
+          echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+          docker tag dockerfile-distroless ${{ secrets.DOCKER_USERNAME }}/nodeapp:$SHORT_SHA
 
       - name: Push Image
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/nodeapp:${{ github.sha }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/nodeapp:$SHORT_SHA
