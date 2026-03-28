@@ -25,8 +25,8 @@ jobs:
 
       - name: Create .env file
         run: |
-          echo "PORT=3000" >> .env.development
-          echo "APP=DevAPP" >> .env.development
+          echo "PORT=${{secrets.NODE_PORT_DEV}}" >> .env.development
+          echo "APP=${{secrets.NODE_PORT_APP}}" >> .env.development
 
       - name: Run NodeJs App
         run: |
