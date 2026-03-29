@@ -1,6 +1,11 @@
 name: Complete CI pipeline
 
-on: workflow_dispatch
+on: 
+  workflow_dispatch:
+  push:
+    branches: main
+  pull_request:
+    branches: main
 
 jobs:
   sonar:
@@ -23,7 +28,8 @@ jobs:
 
   docker:
     runs-on: [self-hosted, wsl-pvk]
-
+    needs: sonar
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
