@@ -36,20 +36,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Docker login
-        uses: docker/login-action@v4
+      - name: Docker login, build, tag and push
+        uses: karthipv-07/git-demo/.github/actions/docker-build-push@main
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Build Docker image
-        run: docker build -f Dockerfile.distroless -t dockerfile-distroless .
-
-      - name : Set Docker tag
-        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
-
-      - name: Tag Docker image
-        run: docker tag dockerfile-distroless ${{ vars.DOCKERHUB_USERNAME }}/nodeapp:$SHORT_SHA
-
-      - name: Push Image
-        run: docker push ${{ vars.DOCKERHUB_USERNAME }}/nodeapp:$SHORT_SHA
