@@ -19,10 +19,11 @@ jobs:
       - name: Build Docker image
         run: docker build -f Dockerfile.distroless -t dockerfile-distroless .
 
+      - name : Set Docker tag
+        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
       - name: Tag Docker image
-        run: |
-          SHORT_SHA=${GITHUB_SHA::7}
-          docker tag dockerfile-distroless ${{ vars.DOCKERHUB_USERNAME }}/nodeapp:$SHORT_SHA
+        run: docker tag dockerfile-distroless ${{ vars.DOCKERHUB_USERNAME }}/nodeapp:$SHORT_SHA
 
       - name: Push Image
         run: docker push ${{ vars.DOCKERHUB_USERNAME }}/nodeapp:$SHORT_SHA
