@@ -37,7 +37,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Docker login, build, tag and push
-        uses: Arunjerry15/git-demo/.github/actions/docker-build-push@main
+        uses: karthipv-07/git-demo/.github/actions/docker-build-push@main
         with:
           #username: ${{ vars.DOCKERHUB_USERNAME }}
           username: udayamoorthi98 
