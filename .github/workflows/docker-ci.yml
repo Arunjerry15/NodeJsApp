@@ -24,7 +24,14 @@ jobs:
         run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
 
       - name: Tag Docker image
-        run: docker tag dockerfile-distroless ${{ vars.DOCKERHUB_USERNAME }}/nodeapp:$SHORT_SHA
+        run: docker tag dockerfile-distroless udayamoorthi98/nodeapp:${{ env.SHORT_SHA }}
 
       - name: Push Image
-        run: docker push ${{ vars.DOCKERHUB_USERNAME }}/nodeapp:$SHORT_SHA
+        run: docker push udayamoorthi98/nodeapp:${{ env.SHORT_SHA }}
+
+
+     # - name: Tag Docker image
+      #  run: docker tag dockerfile-distroless ${{ vars.DOCKERHUB_USERNAME }}/nodeapp:$SHORT_SHA
+
+    #  - name: Push Image
+    #    run: docker push ${{ vars.DOCKERHUB_USERNAME }}/nodeapp:$SHORT_SHA
