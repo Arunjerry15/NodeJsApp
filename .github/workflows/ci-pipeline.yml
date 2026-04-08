@@ -9,7 +9,7 @@ on:
 
 jobs:
   sonar:
-    runs-on: [self-hosted, wsl-pvk]
+    runs-on: [self-hosted, Linux]
     if: github.event_name == 'pull_request'
 
     steps:
@@ -39,5 +39,6 @@ jobs:
       - name: Docker login, build, tag and push
         uses: karthipv-07/git-demo/.github/actions/docker-build-push@main
         with:
-          username: ${{ vars.DOCKERHUB_USERNAME }}
+          #username: ${{ vars.DOCKERHUB_USERNAME }}
+          username: udayamoorthi98 
           password: ${{ secrets.DOCKER_PASSWORD }}
