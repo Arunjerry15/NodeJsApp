@@ -4,7 +4,7 @@ on: workflow_dispatch
 
 jobs:
   dockerci:
-    runs-on: [self-hosted, wsl-pvk]
+    runs-on: [self-hosted, Linuxk]
 
     steps:
       - name: Checkout code
