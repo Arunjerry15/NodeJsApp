@@ -10,7 +10,8 @@ on:
 jobs:
   sonar:
     runs-on: [self-hosted, Linux]
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request'
+    environment: prod
+    #if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request'
     #if: github.event_name == 'pull_request'
 
     steps:
@@ -36,10 +37,21 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Docker login, build, tag and push
-        uses: karthipv-07/git-demo/.github/actions/docker-build-push@main
         with:
-          #username: ${{ vars.DOCKERHUB_USERNAME }}
           username: udayamoorthi98 
           password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Set Short SHA
+        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
+      - name: Build, Tag and Push
+        run: |
+          docker build -t udayamoorthi98/nodeapp:${{ env.SHORT_SHA }} .
+          docker push udayamoorthi98/nodeapp:${{ env.SHORT_SHA }}
+
+      #- name: Docker login, build, tag and push
+        #uses: karthipv-07/git-demo/.github/actions/docker-build-push@main
+        #with:
+          #username: ${{ vars.DOCKERHUB_USERNAME }}
+          #username: udayamoorthi98 
+          #password: ${{ secrets.DOCKER_PASSWORD }}
