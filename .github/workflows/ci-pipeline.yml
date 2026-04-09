@@ -8,33 +8,12 @@ on:
     branches: main
 
 jobs:
-  sonar:
-    runs-on: [self-hosted, Linux]
-    environment: prod
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Better for Sonar analysis
-
-      - name: SonarQube analysis
-        uses: SonarSource/sonarqube-scan-action@v6
-        with:
-          args: >
-            -Dsonar.projectKey=NodeJS_App1
-            -Dsonar.sources=.
-            -Dsonar.qualitygate.wait=true
-            -X
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-
+  # 1. Docker Job runs first
   docker:
     runs-on: [self-hosted, Linux]
-    needs: sonar # Ensures Docker only runs if Sonar passes
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     environment: prod
+    # Only push images on actual merges/dispatches, not just PR tests
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     
     steps:
       - name: Checkout code
@@ -51,9 +30,32 @@ jobs:
 
       - name: Build, Tag and Push
         run: |
-          # Use -f if your file is named Dockerfile.distroless
           docker build -f Dockerfile.distroless -t udayamoorthi98/nodeapp:${{ env.SHORT_SHA }} .
           docker push udayamoorthi98/nodeapp:${{ env.SHORT_SHA }}
+
+  # 2. Sonar Job runs only after Docker succeeds
+  sonar:
+    runs-on: [self-hosted, Linux]
+    needs: docker
+    environment: prod
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Important for accurate Sonar analysis
+
+      - name: SonarQube analysis
+        uses: SonarSource/sonarqube-scan-action@v6
+        with:
+          args: >
+            -Dsonar.projectKey=NodeJS_App1
+            -Dsonar.sources=.
+            -Dsonar.qualitygate.wait=true
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
 
 # name: Complete CI pipeline
 
