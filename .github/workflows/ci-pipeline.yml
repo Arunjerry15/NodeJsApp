@@ -4,16 +4,11 @@ on:
   workflow_dispatch:
   push:
     branches: main
-  pull_request:
-    branches: main
 
 jobs:
-  # 1. Docker Job runs first
+  # JOB 1: Docker Build & Push
   docker:
     runs-on: [self-hosted, Linux]
-    environment: prod
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -27,17 +22,15 @@ jobs:
       - name: Set Short SHA
         run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
 
-      - name: Build, Tag and Push
+      - name: Build and Push
         run: |
           docker build -f Dockerfile.distroless -t udayamoorthi98/nodeapp:${{ env.SHORT_SHA }} .
           docker push udayamoorthi98/nodeapp:${{ env.SHORT_SHA }}
 
-  # 2. Sonar Job runs only after Docker succeeds
+  # JOB 2: SonarQube Analysis (Runs only if Docker succeeds)
   sonar:
     runs-on: [self-hosted, Linux]
     needs: docker
-    environment: prod
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -51,11 +44,10 @@ jobs:
             -Dsonar.projectKey=NodeJS_App1
             -Dsonar.sources=.
             -Dsonar.qualitygate.wait=true
-            -Dsonar.ws.timeout=300
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-          # This variable is key to bypassing the ngrok browser warning
+          # Fix for ngrok landing page error
           SONAR_SCANNER_OPTS: "-Dngrok-skip-browser-warning=true"
 
 
