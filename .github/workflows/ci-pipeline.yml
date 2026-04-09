@@ -12,7 +12,6 @@ jobs:
   docker:
     runs-on: [self-hosted, Linux]
     environment: prod
-    # Only push images on actual merges/dispatches, not just PR tests
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     
     steps:
@@ -43,7 +42,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Important for accurate Sonar analysis
+          fetch-depth: 0 
 
       - name: SonarQube analysis
         uses: SonarSource/sonarqube-scan-action@v6
@@ -52,9 +51,13 @@ jobs:
             -Dsonar.projectKey=NodeJS_App1
             -Dsonar.sources=.
             -Dsonar.qualitygate.wait=true
+            -Dsonar.ws.timeout=300
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          # This variable is key to bypassing the ngrok browser warning
+          SONAR_SCANNER_OPTS: "-Dngrok-skip-browser-warning=true"
+
 
 
 # name: Complete CI pipeline
